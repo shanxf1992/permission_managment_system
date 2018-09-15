@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="PermissionManagmentSystem:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="PermissionManagmentSystem-1.0-SNAPSHOT.war">
+      <element id="artifact" artifact-name="PermissionManagmentSystem:war exploded" />
+    </root>
+  </artifact>
+</component>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+	      http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+
+  <display-name>Archetype Created Web Application</display-name>
+
+  <!--
+    指定 spring bean 配置文件所在目录, 便于监听 spring bean 的加载创建,
+    applicationContext.xml 用于配置 spring 管理的 beans 的相关配置
+    -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:spring/applicationContext*.xml</param-value>
+  </context-param>
+
+  <!--过滤需要登陆的请求-->
+  <filter>
+    <filter-name>RequestFilter</filter-name>
+    <filter-class>com.itheima.acl.filter.RequestFilter</filter-class>
+  </filter>
+
+  <!--过滤一些不需要拦截的静态资源-->
+  <filter>
+    <filter-name>DruidStatFilter</filter-name>
+    <filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>
+    <init-param>
+      <param-name>exclusions</param-name>
+      <param-value>*.jsp,*.css,*.jpg,*.png,*.ioc,*.gif,/sys/druid/*</param-value>
+    </init-param>
+  </filter>
+
+  <!--权限拦截过滤器-->
+  <filter>
+    <filter-name>aclControllerFilter</filter-name>
+    <filter-class>com.itheima.acl.filter.AclControllerFilter</filter-class>
+    <!--配置初始化白名单-->
+    <init-param>
+      <param-name>targetFilterLifecycle</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    <init-param>
+      <param-name>exclusionUrls</param-name>
+      <param-value>/sys/User/noAuth.page,/login.page</param-value>
+    </init-param>
+  </filter>
+
+  <!--指定相关的编码 Encoding-->
+  <filter>
+    <filter-name>EncodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <!--配置相关参数, 过滤指定请求, 对其指定编码集-->
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+    <!--开启强制使用 utf-8 编码-->
+    <init-param>
+      <param-name>forceEncoding</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>RequestFilter</filter-name>
+    <url-pattern>/sys/*</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>DruidStatFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+
+  <filter-mapping>
+    <filter-name>EncodingFilter</filter-name>
+    <!--
+      /* 与 / 不同, /* 会拦截所有的请求,
+      包括路径型的 和 后缀型的 url
+      -->
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>aclControllerFilter</filter-name>
+    <url-pattern>/sys/*</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
+  </filter-mapping>
+
+  <!--
+    指定spring上下文的监听器, 监听spring bean的加载 
+  -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+
+  <!--配置 Durid 登陆相关-->
+  <servlet>
+    <servlet-name>DruidStatServlet</servlet-name>
+    <servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+    <init-param>
+      <param-name>loginUsername</param-name>
+      <param-value>druid</param-value>
+    </init-param>
+    <init-param>
+      <param-name>loginPassword</param-name>
+      <param-value>123</param-value>
+    </init-param>
+  </servlet>
+
+  <!--
+    spring mvc , spring web 相关的配置
+    需要配置前端控制器对应的 DispatcherServlet , 用于派发前端的访问请求
+  -->
+  <servlet>
+    <servlet-name>spring-mvc</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:spring/applicationContextWeb.xml</param-value>
+    </init-param>
+  </servlet>
+  <!--
+      设置匹配路径为 / 会匹配到 /login 的路径行的url,
+      但是不会匹配到 /*.jsp 后缀型的 url,
+      为什么 jsp 的请求不会命中 servlet? servlet 内建的 jsp-servlet 会被调用, 默认映射到 *.jsp 上, 但是 类似 .js .css 会被拦截
+      -->
+  <servlet-mapping>
+    <servlet-name>spring-mvc</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+
+  <servlet-mapping>
+    <servlet-name>DruidStatServlet</servlet-name>
+    <url-pattern>/sys/druid/*</url-pattern>
+  </servlet-mapping>
+
+
+</web-app>

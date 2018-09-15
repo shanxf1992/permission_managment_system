@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--
+        applicationContext.xml 主要配置 spring 相关的, spring 上下文(容器), DataBease等
+        主要配置 那些交由 spring 管理的 bean 的实例对象, 在该 xml 文件加载时, 这些 beans
+        将由 spring 来进行 实例化.
+    -->
+
+    <!--
+        首先, 将数据源的实例化对像 交给 spring 管理
+        1 关联配置文件
+        2 配置 datasource
+    -->
+    <!--关联外部配置文件, 方式一-->
+    <!--<context:property-placeholder location="classpath:jdbc.properties"/>-->
+
+    <!--关联外部配置文件, 方式二-->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="locations">
+            <list>
+                <value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="initialSize" value="3"/>
+        <property name="maxActive" value="5"/>
+        <property name="maxWait" value="6000"/>
+        <property name="filters" value="stat,wall"/>
+    </bean>
+
+    <!--
+        将 mybatis 的核心 SqlSessionFactory 交给 spring 管理.
+        首先, 配置 SqlSessionFactoryBean
+            1. 设置数据源 dataSource
+            2. 设置实例类的别名
+            3. 管理 mybatis-config.xml 配置文件
+            4. 关联 mapper.xml 配置文件
+    -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="typeAliasesPackage" value="com.itheima.acl.domain"/>
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+        <property name="mapperLocations" value="classpath:mybatis/mapper/**/*Mapper.xml"/>
+    </bean>
+
+    <!--
+        扫描 mapper 接口, 配置 mapper 接口的实现类
+    -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.itheima.acl.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!--
+        配置 事务管理器
+            1 注入 dataSource
+            2 启动事务相关的注解
+    -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!--
+        对 druid 中的 <property name="filters" value="stat,wall"/> 中的 stat, wall 配置
+        stat:
+            logSlowSql:
+            slowSqlMillis:
+            mergeSql:
+        wall:
+            dbType:
+     -->
+    <bean id="statFilter" class="com.alibaba.druid.filter.stat.StatFilter">
+        <property name="logSlowSql" value="true"/>
+        <property name="slowSqlMillis" value="3000"/>
+        <property name="mergeSql" value="true"/>
+    </bean>
+    <bean id="wallFilter" class="com.alibaba.druid.wall.WallFilter">
+        <property name="dbType" value="mysql"/>
+    </bean>
+</beans>

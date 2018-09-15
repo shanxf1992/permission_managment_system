@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/tool http://www.springframework.org/schema/tool/spring-tool.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--
+        applicationConntextWeb.xml  主要配置 spring web 相关的, web上下文(容器),
+        中配置一些与请求相关的处理, 与 DispatcherServlet 对应
+    -->
+
+    <!--首先引入上下文配置, 使上下文的注解能够被使用-->
+    <context:annotation-config />
+
+    <!--
+        启动注解驱动的 spring mvc 的功能, 配置以后,
+        Controller 注解, Service注解等 都会自动的成为 spring 管理的 bean,
+        会自动注册RequestMappingHandlerMapping、RequestMappingHandlerAdapter 与xceptionHandlerExceptionResolver 三个bean。
+    -->
+    <mvc:annotation-driven/>
+
+    <mvc:interceptors>
+        <bean class="com.itheima.acl.common.HttpInterceptor"/>
+    </mvc:interceptors>
+
+    <!--允许 .css .js 等静态资源允许被访问-->
+    <mvc:resources mapping="/js/**" location="/js/**"/>
+    <mvc:resources mapping="/css/**" location="/css/**"/>
+    <mvc:resources mapping="/bootstrap3.3.5/**" location="/bootstrap3.3.5/"/>
+    <mvc:resources mapping="/assets/**" location="/assets/"/>
+    <mvc:resources mapping="/common/**" location="/common/**"/>
+    <mvc:resources mapping="/ztree/**" location="/ztree/"/>
+
+
+    <!--
+        启动包扫描的功能,
+    -->
+    <context:component-scan base-package="com.itheima.acl.controller"/>
+    <context:component-scan base-package="com.itheima.acl.service"/>
+
+    <!--配置获取上下文 applicationContext 的Bean-->
+    <bean class="com.itheima.acl.common.ApplicationContextHelper" lazy-init="false"/>
+    <!--
+        当定义一个springmvc 接口的时候, 会使用 @RequestMapping 注解,
+        RequestMappingHandlerMapping 将定义好的 @RequestMapping 注解 对应到 相应的接口
+    -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+
+    <!--配置自定义全局异常处理类-->
+    <bean class="com.itheima.acl.common.ExceptionResolver"/>
+    <!--
+        处理对应请求处理后, 以什么样的请求返回, 返回的时 jsp, json, .pdf等, 用来做视图渲染
+        当配置了 BeanNameViewResolver 后, 需要配置其它的一些beans.
+        MappingJackson2JsonView: 处理的结果以 json 返回的时候, 会使用 该类来处理
+        InternalResourceViewResolver: 内部资源视图解析, 当返回视图时, 处理的类
+    -->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
+    <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"/>
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+</beans>

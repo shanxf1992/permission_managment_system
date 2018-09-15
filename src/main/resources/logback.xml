@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+    <!--
+        scan : true 表示当配置文件发生变化, 它将会自定加载
+        scanPeriod: 设置配置文件是否有修改的时间间隔, 当scan为true时才生效
+    -->
+<configuration scan="true" scanPeriod="60 seconds">
+    <!--
+        appender 指定 日志的输出格式
+        STDOUT: 标准化输出
+        ConsoleAppender: 相当与把日志文件直接输出到控制台, 当tomcat 启动时, 会把日志写入到 catlina.out日志
+    -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--对应的日志-->
+    <!--<logger>-->
+        <!---->
+    <!--</logger>-->
+
+    <!--
+        配置日志的级别
+        TRACE < DEBUG < INFO < WARN < ERROR
+    -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
